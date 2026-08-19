@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from typing import Any
 
 import pytest
@@ -52,6 +53,11 @@ class FakeDevice:
 
     def status(self, nowait: bool = False) -> Any:
         self.status_calls += 1
+        logging.getLogger("tinytuya.core.XenonDevice").debug(
+            "synthetic local key=%s session key=%s",
+            self.local_key,
+            "synthetic-session-key",
+        )
         if self.raise_status is not None:
             raise self.raise_status
         return self.status_result
@@ -199,6 +205,20 @@ async def test_client_does_not_create_background_heartbeat_task() -> None:
     assert factory.device is not None
     assert factory.device.socketPersistent is False
     assert factory.device.socket is None
+
+
+@pytest.mark.asyncio
+async def test_dependency_debug_logs_cannot_expose_protocol_secrets(caplog: pytest.LogCaptureFixture) -> None:
+    factory = Factory()
+    client = make_client(factory)
+    caplog.set_level(logging.DEBUG, logger="tinytuya.core.XenonDevice")
+
+    async with client:
+        await client.status()
+
+    text = caplog.text
+    assert "0123456789abcdef" not in text
+    assert "synthetic-session-key" not in text
 
 
 @pytest.mark.asyncio
