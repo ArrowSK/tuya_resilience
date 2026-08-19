@@ -127,7 +127,7 @@ class TuyaLocalClient:
         self._operation_used = False
         self._closed = False
 
-    async def __aenter__(self) -> "TuyaLocalClient":
+    async def __aenter__(self) -> TuyaLocalClient:
         """Build the non-persistent TinyTuya device object."""
         if self._entered:
             raise TuyaLocalUsageError("client context cannot be entered twice")
