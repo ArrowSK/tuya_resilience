@@ -1,0 +1,14 @@
+{
+  "domain": "tuya_resilience",
+  "name": "Tuya Resilience Companion",
+  "codeowners": [
+    "@ArrowSK"
+  ],
+  "documentation": "https://github.com/ArrowSK/tuya_resilience",
+  "issue_tracker": "https://github.com/ArrowSK/tuya_resilience/issues",
+  "integration_type": "device",
+  "requirements": [
+    "tinytuya==1.20.0"
+  ],
+  "version": "0.1.0"
+}

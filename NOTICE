@@ -1,0 +1,9 @@
+Tuya Resilience Companion
+Copyright 2026 ArrowSK
+
+This project is an independent Home Assistant custom integration. It is not
+affiliated with, endorsed by, or sponsored by Tuya Inc., Home Assistant, or
+the TinyTuya project.
+
+The project depends on third-party software that retains its own licence.
+See THIRD_PARTY_LICENSES.md.
