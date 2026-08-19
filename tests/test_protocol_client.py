@@ -208,7 +208,9 @@ async def test_client_does_not_create_background_heartbeat_task() -> None:
 
 
 @pytest.mark.asyncio
-async def test_dependency_debug_logs_cannot_expose_protocol_secrets(caplog: pytest.LogCaptureFixture) -> None:
+async def test_dependency_debug_logs_cannot_expose_protocol_secrets(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
     factory = Factory()
     client = make_client(factory)
     caplog.set_level(logging.DEBUG, logger="tinytuya.core.XenonDevice")
