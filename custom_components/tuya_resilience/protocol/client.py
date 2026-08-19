@@ -8,6 +8,7 @@ performs exactly one bounded local operation.
 from __future__ import annotations
 
 import asyncio
+import logging
 from collections.abc import Callable
 from ipaddress import ip_address
 from typing import Any, Protocol
@@ -38,6 +39,45 @@ class _TinyTuyaDevice(Protocol):
 
 
 DeviceFactory = Callable[..., _TinyTuyaDevice]
+
+
+class _DropDependencyLogs(logging.Filter):
+    """Drop TinyTuya records while our secret-bearing operation is active."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """Reject the dependency record before handlers format it."""
+        return False
+
+
+def _call_without_tinytuya_logging(operation: Callable[[], Any]) -> Any:
+    """Run one TinyTuya call without allowing dependency internals into HA logs.
+
+    TinyTuya's upstream DEBUG logging includes decrypted protocol material,
+    nonces and negotiated session keys. The companion therefore suppresses
+    TinyTuya's own loggers only for the short duration of a local operation and
+    emits its own sanitized diagnostics at the Home Assistant layer instead.
+    """
+    logger_names = {
+        "tinytuya",
+        "tinytuya.core.Device",
+        "tinytuya.core.XenonDevice",
+    }
+    logger_names.update(
+        name
+        for name in logging.Logger.manager.loggerDict
+        if isinstance(name, str) and name.startswith("tinytuya.")
+    )
+
+    blocker = _DropDependencyLogs()
+    loggers = [logging.getLogger(name) for name in logger_names]
+    for logger in loggers:
+        logger.addFilter(blocker)
+
+    try:
+        return operation()
+    finally:
+        for logger in loggers:
+            logger.removeFilter(blocker)
 
 
 class TuyaLocalClient:
@@ -151,7 +191,7 @@ class TuyaLocalClient:
             raise TuyaLocalUsageError("one-shot client already performed an operation")
 
         self._operation_used = True
-        result = await asyncio.to_thread(operation)
+        result = await asyncio.to_thread(_call_without_tinytuya_logging, operation)
         self._raise_for_error_result(result)
         return result
 
