@@ -10,13 +10,17 @@ Before changing behavior, preserve these invariants:
 3. No heartbeat, permanent listener client, periodic device polling, reconnect
    daemon, or subnet-wide background scan may be introduced.
 4. Device identity must be verified before a local write.
-5. Local keys and cloud credentials must never be logged or exposed.
+5. Local keys, session keys and cloud credentials must never be logged or exposed.
 6. One device failure must not trigger work against other devices.
 
 Run the test suite before opening a pull request:
 
 ```sh
-python -m pip install -e ".[test]"
+python -m pip install \
+  "tinytuya==1.20.0" \
+  "pytest>=8.4,<9" \
+  "pytest-asyncio>=1.1,<2" \
+  "ruff>=0.12,<1"
 pytest
 ruff check .
 ```
